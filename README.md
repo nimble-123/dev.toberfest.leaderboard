@@ -1,3 +1,8 @@
+# Inofficial Devtoberfest leaderboard
+
+![](https://img.shields.io/static/v1?label=NextJS&message=12&color=brightgreen&logo=react)
+![](https://img.shields.io/static/v1?label=Chakra-UI&message=1.0&color=brightgreen&logo=chakraui)
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
