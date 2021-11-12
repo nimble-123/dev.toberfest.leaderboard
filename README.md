@@ -17,6 +17,8 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+[![Image from Gyazo](https://i.gyazo.com/e2d457c578c5015ab405adfd6fe4423b.gif)](https://gyazo.com/e2d457c578c5015ab405adfd6fe4423b)
+
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
