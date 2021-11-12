@@ -1,4 +1,4 @@
-# Inofficial Devtoberfest leaderboard
+# Unofficial Devtoberfest leaderboard
 
 ![](https://img.shields.io/static/v1?label=NextJS&message=12&color=brightgreen&logo=react)
 ![](https://img.shields.io/static/v1?label=Chakra-UI&message=1.0&color=brightgreen&logo=chakraui)

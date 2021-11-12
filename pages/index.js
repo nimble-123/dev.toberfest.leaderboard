@@ -33,7 +33,7 @@ export default function Home() {
           alt="Devtoberfest logo"
         />
         <h1 className={styles.title}>Leaderboard</h1>
-        <p className={styles.description}>Check the inofficial leaderboard right below 🐱‍💻</p>
+        <p className={styles.description}>Check the unofficial leaderboard right below 🐱‍💻</p>
         <Divider />
         <Table variant="simple">
           <TableCaption>Kudos to all participants, organizers and supporters of this event ❤</TableCaption>
