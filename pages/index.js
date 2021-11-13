@@ -1,6 +1,10 @@
 import useSWR from 'swr'
 import Head from 'next/head'
+import { Link } from '@chakra-ui/react'
+import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { Spinner } from '@chakra-ui/react'
 import { Image } from '@chakra-ui/react'
+import { Text } from '@chakra-ui/react'
 import { Divider } from '@chakra-ui/react'
 import { Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableCaption } from '@chakra-ui/react'
 import { IconButton } from '@chakra-ui/react'
@@ -15,7 +19,15 @@ export default function Home() {
   const { data, error } = useSWR('/api/user', fetcher)
 
   if (error) return <div>Failed to load</div>
-  if (!data) return <div>Loading...</div>
+  if (!data) {
+    return (
+      <div className={styles.loading}>
+        <Spinner size="xl" />
+        <Text as="h2">Fetching data...</Text>
+        <Text as="h4">This can take up to 20 seconds</Text>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.container}>
@@ -35,8 +47,10 @@ export default function Home() {
         <h1 className={styles.title}>Leaderboard</h1>
         <p className={styles.description}>Check the unofficial leaderboard right below 🐱‍💻</p>
         <Divider />
-        <Table variant="simple">
-          <TableCaption>Kudos to all participants, organizers and supporters of this event ❤</TableCaption>
+        <Table variant="striped" size="sm">
+          <TableCaption placement="top">
+            Kudos to all participants, organizers and supporters of this event 👾
+          </TableCaption>
           <Thead>
             <Tr>
               <Th>Rank</Th>
@@ -66,7 +80,21 @@ export default function Home() {
         </Table>
       </main>
 
-      <footer className={styles.footer}></footer>
+      <footer className={styles.footer}>
+        <Text>
+          Made with ❤,{' '}
+          <Link href="https://nextjs.org" isExternal>
+            Next.JS
+            <ExternalLinkIcon mx="2px" />
+          </Link>
+          ,{' '}
+          <Link href="https://chakra-ui.com" isExternal>
+            the Chakra Design system
+            <ExternalLinkIcon mx="2px" />
+          </Link>{' '}
+          and a lot of ☕ coffee!
+        </Text>
+      </footer>
     </div>
   )
 }

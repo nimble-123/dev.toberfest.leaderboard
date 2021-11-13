@@ -1,7 +1,6 @@
 import Cors from 'cors'
 import initMiddleware from '../../lib/init-middleware'
 const { Octokit } = require('@octokit/rest')
-require('dotenv').config()
 
 // Initialize the cors middleware
 const cors = initMiddleware(
@@ -47,38 +46,47 @@ export default async function handler(req, res) {
 
   let devtoberfestParticipants = challengePullRequests.map((pr) => {
     if (pr.title.includes('WEEK2CHALLENGE')) {
-      return pr.title.split('WEEK2CHALLENGE ')[1].trim()
+      return pr.title.split('WEEK2CHALLENGE ')[1]
     }
     if (pr.title.includes('WEEK4CHALLENGE')) {
-      return pr.title.split('WEEK4CHALLENGE ')[1].trim()
+      return pr.title.split('WEEK4CHALLENGE ')[1]
     }
     if (pr.title.includes('WEEK6CHALLENGE')) {
-      return pr.title.split('WEEK6CHALLENGE ')[1].trim()
+      return pr.title.split('WEEK6CHALLENGE ')[1]
     }
   })
 
-  devtoberfestParticipants = devtoberfestParticipants.filter((v, i, a) => a.findIndex((t) => t === v) === i)
+  // remove duplicates, leading/trailing hyphens and whitespace
+  devtoberfestParticipants = devtoberfestParticipants
+    .filter((v, i, a) => a.findIndex((t) => t === v) === i)
+    .map((participant) => participant.replace(/-\s/g, '').trim())
 
   const POINTS_REGEX = /POINTS: ([0-9,]{1,6})/
   const LEVEL_REGEX = /LEVEL: ([0-9]{1})/
 
+  //FIXME: instead of the following ugly and kinda slow HTML parsing stuff
+  // we could fetch all badges from SAP people api and compare to the ones needed for devtoberfest points
   let participantScores = await Promise.all(
     devtoberfestParticipants.map(async (participant) => {
+      const user = { id: participant, level: 0, points: 0 }
+
+      // fetch the plain HTML from gameboard
       const res = await fetch(
         `https://devrel-tools-prod-scn-badges-srv.cfapps.eu10.hana.ondemand.com/devtoberfestContest/${participant}`
       )
+      const html = await res.text()
 
-      const user = { id: participant, level: 0, points: 0 }
-
-      const body = await res.text()
-
-      if (POINTS_REGEX.test(body)) {
-        const points = body.match(POINTS_REGEX)[1].replace(/,/g, '')
+      // check if points value is there
+      if (POINTS_REGEX.test(html)) {
+        // and extract that value
+        const points = html.match(POINTS_REGEX)[1].replace(/,/g, '')
         user.points = parseInt(points)
       }
 
-      if (LEVEL_REGEX.test(body)) {
-        const level = body.match(LEVEL_REGEX)[1]
+      // check if level value is there
+      if (LEVEL_REGEX.test(html)) {
+        // and extract that value
+        const level = html.match(LEVEL_REGEX)[1]
         user.level = parseInt(level)
       }
 
@@ -86,6 +94,7 @@ export default async function handler(req, res) {
     })
   )
 
+  // sort the scores from highest to lowest points
   participantScores = participantScores.sort((a, b) => (a.points < b.points ? 1 : -1))
 
   res.json({ participantScores: participantScores })
