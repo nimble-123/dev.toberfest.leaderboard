@@ -9,7 +9,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First create your github personal token and add it to `.env`.
+First create your github personal token and add it to `.env.local` as `github_token`.
 
 Second, run the development server:
 
