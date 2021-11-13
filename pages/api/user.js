@@ -14,68 +14,79 @@ const cors = initMiddleware(
 
 // Initialize octokit github api
 const octokit = new Octokit({
-  auth: process.env.GH_TOKEN,
+  auth: process.env.github_token,
 })
 
 export default async function handler(req, res) {
   // Run cors
   await cors(req, res)
 
+  // Get pull requests from devtoberfest repos to identify some participants
   const owner = 'SAP-samples'
-  const repo = 'devtoberfest-2021'
-  const repo2 = 'devtoberfest-2021-security-coding-challenge'
-
-  const githubResponse = await octokit.paginate('GET /repos/{owner}/{repo}/pulls', {
+  const pullRequestsWeek2Challenge = await octokit.paginate('GET /repos/{owner}/{repo}/pulls', {
     owner: owner,
-    repo: repo,
+    repo: 'devtoberfest-2021',
   })
 
-  const githubResponse2 = await octokit.paginate('GET /repos/{owner}/{repo}/pulls', {
+  const pullRequestsWeek4Challenge = await octokit.paginate('GET /repos/{owner}/{repo}/pulls', {
     owner: owner,
-    repo: repo2,
+    repo: 'devtoberfest-2021-security-coding-challenge',
   })
 
-  const array = githubResponse.concat(githubResponse2)
+  const pullRequestsWeek6Challenge = await octokit.paginate('GET /repos/{owner}/{repo}/pulls', {
+    owner: owner,
+    repo: 'devtoberfest-2021-frontend-coding-challenge',
+  })
 
-  const filteredPR = array.filter((pr) => pr.title.includes('WEEK2CHALLENGE') || pr.title.includes('WEEK4CHALLENGE'))
-  const prusers = filteredPR.map((pr) => {
+  const pullRequests = [...pullRequestsWeek2Challenge, ...pullRequestsWeek4Challenge, ...pullRequestsWeek6Challenge]
+
+  const challengePullRequests = pullRequests.filter(
+    (pr) =>
+      pr.title.includes('WEEK2CHALLENGE') || pr.title.includes('WEEK4CHALLENGE') || pr.title.includes('WEEK6CHALLENGE')
+  )
+
+  let devtoberfestParticipants = challengePullRequests.map((pr) => {
     if (pr.title.includes('WEEK2CHALLENGE')) {
       return pr.title.split('WEEK2CHALLENGE ')[1].trim()
-    } else if (pr.title.includes('WEEK4CHALLENGE')) {
+    }
+    if (pr.title.includes('WEEK4CHALLENGE')) {
       return pr.title.split('WEEK4CHALLENGE ')[1].trim()
     }
+    if (pr.title.includes('WEEK6CHALLENGE')) {
+      return pr.title.split('WEEK6CHALLENGE ')[1].trim()
+    }
   })
+
+  devtoberfestParticipants = devtoberfestParticipants.filter((v, i, a) => a.findIndex((t) => t === v) === i)
 
   const POINTS_REGEX = /POINTS: ([0-9,]{1,6})/
   const LEVEL_REGEX = /LEVEL: ([0-9]{1})/
 
-  const gameboardResponses = prusers.map(async (users) => {
-    const res = await fetch(
-      `https://devrel-tools-prod-scn-badges-srv.cfapps.eu10.hana.ondemand.com/devtoberfestContest/${users}`
-    )
+  let participantScores = await Promise.all(
+    devtoberfestParticipants.map(async (participant) => {
+      const res = await fetch(
+        `https://devrel-tools-prod-scn-badges-srv.cfapps.eu10.hana.ondemand.com/devtoberfestContest/${participant}`
+      )
 
-    let user = { id: users, level: 0, points: 0 }
+      const user = { id: participant, level: 0, points: 0 }
 
-    const body = await res.text()
+      const body = await res.text()
 
-    if (POINTS_REGEX.test(body)) {
-      const points = body.match(POINTS_REGEX)[1].replace(/,/g, '')
-      user.points = parseInt(points)
-    }
+      if (POINTS_REGEX.test(body)) {
+        const points = body.match(POINTS_REGEX)[1].replace(/,/g, '')
+        user.points = parseInt(points)
+      }
 
-    if (LEVEL_REGEX.test(body)) {
-      const level = body.match(LEVEL_REGEX)[1]
-      user.level = parseInt(level)
-    }
+      if (LEVEL_REGEX.test(body)) {
+        const level = body.match(LEVEL_REGEX)[1]
+        user.level = parseInt(level)
+      }
 
-    return user
-  })
+      return user
+    })
+  )
 
-  const users = await Promise.all(gameboardResponses)
+  participantScores = participantScores.sort((a, b) => (a.points < b.points ? 1 : -1))
 
-  const removedDuplicates = users.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
-
-  const sorted = removedDuplicates.sort((a, b) => (a.points < b.points ? 1 : -1))
-
-  res.json({ users: sorted })
+  res.json({ participantScores: participantScores })
 }

@@ -39,14 +39,16 @@ export default function Home() {
           <TableCaption>Kudos to all participants, organizers and supporters of this event ❤</TableCaption>
           <Thead>
             <Tr>
+              <Th>Rank</Th>
               <Th>Developer</Th>
               <Th>Level</Th>
               <Th isNumeric>Points</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {data.users.map((user) => (
+            {data.participantScores.map((user, index) => (
               <Tr key={user.id}>
+                <Td>{++index}</Td>
                 <Td>{user.id}</Td>
                 <Td>{user.level}</Td>
                 <Td isNumeric>{user.points}</Td>
@@ -55,6 +57,7 @@ export default function Home() {
           </Tbody>
           <Tfoot>
             <Tr>
+              <Th>Rank</Th>
               <Th>Developer</Th>
               <Th>Level</Th>
               <Th isNumeric>Points</Th>
